@@ -1,45 +1,50 @@
-# python3
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Module docstring: One line description of what your program does.
+"""
+__author__ = "???"
 
 import sys
 
 
-class Bracket:
-
-    def __init__(self, bracket_type, position):
-        self.bracket_type = bracket_type
-        self.position = position
-
-    def match(self, char):
-        if self.bracket_type == '[' and char == ']':
-            return True
-        if self.bracket_type == '{' and char == '}':
-            return True
-        if self.bracket_type == '(' and char == ')':
-            return True
-        return False
+openers = ['[', '(', '{', '<', '(*']
+closers = [']', ')', '}', '>', '*)']
 
 
-def checker(text):
+def is_nested(line):
+    """Validate a single input line for correct nesting"""
     stack = []
-    for index, char in enumerate(text, start=1):
+    unbalanced = False
+    pos = 0
+    while line:
+        token = line[0]
+        if line[:2] == '(*' or line[:2] == '*)':
+            token = line[:2]
+        pos += 1
+        if token in closers:
+            index = closers.index(token)
+            match = openers[index]
+            if stack.pop() != match:
+                unbalanced = True
+                break
+        if token in openers:
+            stack.append(token)
 
-        if char in ("[", "(", "{"):
-            stack.append(Bracket(char, index))
-
-        elif char in ("]", ")", "}"):
-            if not stack:
-                return index
-
-            top = stack.pop()
-            if not top.match(char):
-                return index
-    if stack:
-        top = stack.pop()
-        return top.position
-
-    return "Success"
+        line = line[len(token):]
+    if stack or unbalanced:
+        return 'No ' + str(pos)
+    return 'Yes '
 
 
-if __name__ == "__main__":
-    text = sys.stdin.read().strip("\n")
-    print(checker(text))
+def main(args):
+    with open('input.txt', 'r') as f:
+        with open('output.txt', 'w') as o:
+            for line in f:
+                read_output = is_nested(line)
+                print(read_output)
+                o.write(read_output + '\n')
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
